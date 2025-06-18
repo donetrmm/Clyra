@@ -162,7 +162,41 @@ CREATE INDEX idx_passwords_favorite ON passwords(is_favorite);
 4. **Recuperación**: Desencriptación automática con verificación de integridad
 5. **Presentación**: Datos en memoria solo durante el uso activo
 
-### 9. **Re-encriptación**
+### 7. **Timer de Inactividad Automático**
+
+#### Sistema de Gestión de Sesión Avanzado
+El proyecto implementa un sistema robusto de gestión de sesión con timer de inactividad automático:
+
+**Características Técnicas:**
+- **Detección de actividad**: Captura automática de interacciones del usuario (toques, gestos, movimientos)
+- **Timer configurable**: Timeout ajustable desde 1 minuto hasta 1 hora
+- **Almacenamiento seguro**: Configuración y tokens de sesión encriptados con AES-256
+- **Validación continua**: Verificación periódica cada 30 segundos del estado de la sesión
+- **Restauración de sesión**: Capacidad de restaurar sesiones válidas al reiniciar la app
+
+**Componentes de Seguridad:**
+```dart
+// Configuración encriptada del timeout
+const String inactivityTimeoutKey = 'inactivity_timeout_minutes';
+const String sessionTokenKey = 'session_token';
+const String lastActivityTimeKey = 'last_activity_time';
+
+// Generación de token único por sesión
+final sessionToken = Uuid().v4();
+
+// Almacenamiento encriptado
+final encryptedToken = encryptionService.encrypt(sessionToken);
+final encryptedTime = encryptionService.encrypt(lastActivity.toIso8601String());
+```
+
+**Flujo de Funcionamiento:**
+1. **Inicio de sesión**: Se genera un token único y se inicia el timer
+2. **Detección de actividad**: Cualquier interacción reinicia el contador
+3. **Verificación periódica**: Timer verifica cada 30s si la sesión sigue válida
+4. **Cierre automático**: Al expirar, se limpia la sesión y se retorna al login
+5. **Indicadores visuales**: Barra de progreso y indicador de tiempo restante
+
+### 8. **Re-encriptación**
 
 #### Re-encriptación Segura
 - **Cambio de contraseña maestra**: Re-encriptación automática de todos los datos
@@ -181,11 +215,11 @@ dependencies:
 - [x] **Cifrado AES-256 de la base de datos** - Encriptación selectiva de campos sensibles
 - [x] **Derivación segura de claves (PBKDF2)** - 10,000 iteraciones con salt
 - [x] **Limpieza de memoria** - Dispose automático de servicios y controllers
+- [x] **Bloqueo automático por inactividad** - Timer de sesión configurable con almacenamiento encriptado
 
 ### **EN DESARROLLO**
 - [ ] **Desbloqueo biométrico** - Estructura preparada, implementación pendiente
 
 ### **FUNCIONALIDADES FUTURAS**
 - [ ] **Derivación con Argon2** - Migración desde PBKDF2 a Argon2id para mayor seguridad
-- [ ] **Bloqueo automático por inactividad** - Timer de sesión configurable
 - [ ] **Sistema de backup cifrado** - Exportación/importación segura con encriptación E2E

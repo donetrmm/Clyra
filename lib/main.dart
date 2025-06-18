@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/injection/injection_container.dart';
 import 'core/navigation/app_router.dart';
+import 'core/widgets/activity_detector.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/passwords/presentation/viewmodels/password_viewmodel.dart';
 
@@ -25,17 +26,18 @@ class ClyraApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<AuthViewModel>.value(value: authViewModel),
         ChangeNotifierProvider<PasswordViewModel>(
-          create: ( _) => sl<PasswordViewModel>(),
+          create: (_) => sl<PasswordViewModel>(),
         ),
       ],
-      child: MaterialApp.router(
-        title: 'Clyra',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode:
-            ThemeMode.dark,
-        routerConfig: AppRouter.createRouter(authViewModel),
+      child: ActivityDetector(
+        child: MaterialApp.router(
+          title: 'Clyra',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.dark,
+          routerConfig: AppRouter.createRouter(authViewModel),
+        ),
       ),
     );
   }

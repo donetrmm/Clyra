@@ -6,6 +6,7 @@ import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/change_master_password_page.dart';
+import '../../features/auth/presentation/pages/session_settings_page.dart';
 import '../../features/passwords/presentation/pages/home_page.dart';
 import '../../features/passwords/presentation/pages/add_password_page.dart';
 import '../../features/passwords/presentation/pages/edit_password_page.dart';
@@ -19,14 +20,29 @@ class AppRouter {
   static const String addPassword = '/add-password';
   static const String editPassword = '/edit-password';
   static const String changeMasterPassword = '/change-master-password';
+  static const String sessionSettings = '/session-settings';
+
+  // GlobalKey para acceder al router desde cualquier lugar
+  static final GlobalKey<NavigatorState> _rootNavigatorKey =
+      GlobalKey<NavigatorState>();
+  static GoRouter? _router;
 
   static GoRouter createRouter(AuthViewModel authViewModel) {
-    return GoRouter(
+    _router = GoRouter(
+      navigatorKey: _rootNavigatorKey,
       initialLocation: splash,
       refreshListenable: authViewModel,
       redirect: (context, state) {
         final isLoggedIn = authViewModel.isLoggedIn;
+        final hasSessionExpired = authViewModel.hasSessionExpired;
 
+        // Si la sesión expiró, forzar navegación al login
+        if (hasSessionExpired) {
+          debugPrint('AppRouter: Sesión expirada, redirigiendo al login');
+          return login;
+        }
+
+        // Redirección normal para usuarios no autenticados
         if (!isLoggedIn &&
             state.matchedLocation != splash &&
             state.matchedLocation != login &&
@@ -80,6 +96,11 @@ class AppRouter {
           name: 'changeMasterPassword',
           builder: (context, state) => const ChangeMasterPasswordPage(),
         ),
+        GoRoute(
+          path: sessionSettings,
+          name: 'sessionSettings',
+          builder: (context, state) => const SessionSettingsPage(),
+        ),
       ],
       errorBuilder:
           (context, state) => Scaffold(
@@ -105,5 +126,18 @@ class AppRouter {
             ),
           ),
     );
+
+    return _router!;
   }
+
+  /// Método estático para navegar al login cuando la sesión expire
+  static void navigateToLogin() {
+    if (_router != null) {
+      debugPrint('AppRouter: Navegando al login...');
+      _router!.go(login);
+    }
+  }
+
+  /// Getter para obtener el contexto actual
+  static BuildContext? get currentContext => _rootNavigatorKey.currentContext;
 }

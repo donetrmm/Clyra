@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/navigation/app_router.dart';
+import '../../../../core/widgets/session_indicator.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../widgets/password_card.dart';
 import '../viewmodels/password_viewmodel.dart';
@@ -53,10 +54,19 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text('Clyra'),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(3),
+          child: SessionProgressBar(),
+        ),
         actions: [
+          const SessionIndicator(showTimeRemaining: false),
+          const SizedBox(width: 8),
           PopupMenuButton<String>(
             onSelected: (value) {
               switch (value) {
+                case 'session_settings':
+                  context.push(AppRouter.sessionSettings);
+                  break;
                 case 'change_master_password':
                   context.push(AppRouter.changeMasterPassword);
                   break;
@@ -67,6 +77,16 @@ class _HomePageState extends State<HomePage> {
             },
             itemBuilder:
                 (context) => [
+                  PopupMenuItem(
+                    value: 'session_settings',
+                    child: Row(
+                      children: [
+                        Icon(Icons.timer, size: 18, color: AppTheme.accentTeal),
+                        const SizedBox(width: 8),
+                        const Text('Configuración de Sesión'),
+                      ],
+                    ),
+                  ),
                   PopupMenuItem(
                     value: 'change_master_password',
                     child: Row(
@@ -102,7 +122,7 @@ class _HomePageState extends State<HomePage> {
                 ],
             child: IconButton(
               icon: const Icon(Icons.settings),
-              onPressed: null, 
+              onPressed: null,
             ),
           ),
         ],
@@ -283,8 +303,7 @@ class _HomePageState extends State<HomePage> {
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: PasswordCard(
                                   password: password,
-                                  onTap: () {
-                                  },
+                                  onTap: () {},
                                   onFavoriteToggle: () {
                                     viewModel.toggleFavorite(password.id);
                                   },

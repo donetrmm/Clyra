@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../storage/database_service.dart';
 import '../storage/encryption_service.dart';
+import '../storage/session_timer_service.dart';
 
 import '../../features/auth/data/datasources/local/auth_local_datasource.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -14,7 +15,7 @@ import '../../features/passwords/data/repositories/password_repository_impl.dart
 import '../../features/passwords/domain/repositories/password_repository.dart';
 import '../../features/passwords/presentation/viewmodels/password_viewmodel.dart';
 
-final sl = GetIt.instance; 
+final sl = GetIt.instance;
 
 class InjectionContainer {
   static Future<void> init() async {
@@ -27,6 +28,14 @@ class InjectionContainer {
     sl.registerLazySingleton<EncryptionService>(
       () => EncryptionService.instance,
     );
+
+    // session timer service - se registra como factory para crear cuando sea necesario
+    sl.registerFactoryAsync<SessionTimerService>(() async {
+      return await SessionTimerService.create(
+        prefs: sl<SharedPreferences>(),
+        encryptionService: sl<EncryptionService>(),
+      );
+    });
 
     // auth
     sl.registerLazySingleton<AuthLocalDataSource>(
